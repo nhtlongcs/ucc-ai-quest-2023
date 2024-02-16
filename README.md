@@ -13,7 +13,7 @@
     </a>
 </p>
 
-This repository contains the solution of team `FSGWL` (_i also don't know what it stands for lmao_) for the [competition](https://aihub.ml/competitions/623).
+This repository contains the solution of team `FSGWL` (_i don't know what it stands for lmao_) for the [competition](https://aihub.ml/competitions/623).
 
 ---
 
