@@ -1,0 +1,89 @@
+global:
+  wandb: True
+  username: ucc-quest-23
+  project_name: "backbones"
+  name: "fold_0-mask2former-ade-swinB" # experiment name
+  save_dir: ./runs
+  use_fp16: true
+  debug: false
+  verbose: true
+  SEED: 42
+  pretrained: null
+  resume: null
+  find_lr: False
+
+data:
+  name: KFoldSegDatasetCSV
+  args:
+    SIZE: 380
+    train:
+      fold_index: 0  # 0 ~ 4
+      csv_path: data/df_pseudo.csv
+      split: train
+      loader:
+        batch_size: 16
+        num_workers: 8
+        shuffle: true
+        drop_last: false
+    val:
+      fold_index: 0  # 0 ~ 4
+      csv_path: data/df_pseudo.csv
+      split: valid
+      loader:
+        batch_size: 16 
+        num_workers: 8
+        shuffle: false
+        drop_last: true
+
+model:
+  name: Mask2former
+  args:
+    NUM_CLASS: 2
+    PRETRAINED: "facebook/mask2former-swin-base-ade-semantic"
+    freeze_epochs: -1
+
+loss:
+  weights:
+    bce: 1.0
+  smooth_factor: 0.2
+
+metric:
+  - name: SMAPIoUMetricWrapper
+    args:
+      label_key: "labels"
+
+trainer:
+  num_epochs: 100
+  evaluate_interval: 1
+  print_interval: 5
+  save_interval: 1000
+  accumulate_grad_batches: 1
+  learning_rate: 3e-4
+  lr_scheduler:
+    name: WarmupPolyLR
+  optimizer:
+    name: AdamW
+    args:
+      lr: ${trainer.learning_rate}
+      weight_decay: 2.5e-4
+
+callbacks:
+  - name: ModelCheckpoint
+    args:
+      dirpath: null
+      filename: "{epoch}-{val_high_vegetation__IoU:.4f}"
+      monitor: "val_high_vegetation__IoU"
+      verbose: True
+      save_top_k: 3
+      mode: max
+  - name: EarlyStopping
+    args:
+      monitor: "val_high_vegetation__IoU"
+      min_delta: 0.00001
+      patience: 30
+      verbose: False
+      mode: max
+  - name: LearningRateMonitor
+    args:
+      logging_interval: step
+  - name: SemanticVisualizerCallbackWanDB

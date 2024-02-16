@@ -1,0 +1,70 @@
+global:
+    wandb: True
+    username: ucc-quest-23
+    project_name: "ucc-quest-23-public-lb"
+    name: "baseline-unet" # experiment name
+    save_dir: ./runs
+    use_fp16: true
+    debug: false
+    verbose: true
+    SEED: 1940
+    pretrained: null
+    resume: null
+    find_lr: False
+data:
+    name: SegDataset
+    args:
+        SIZE: 380
+        train:
+            root_dir: data
+            phase: public
+            split: train
+            loader:
+                batch_size: 16
+                num_workers: 1
+        val:
+            root_dir: data
+            phase: public
+            split: valid
+            loader:
+                batch_size: 16 
+                num_workers: 1
+                shuffle: false
+                drop_last: true
+model:
+    name: Unet
+    args:
+        NUM_CLASS: 2
+metric:
+    - name: SMAPIoUMetricWrapper
+      args:
+          label_key: "labels"
+
+trainer:
+    num_epochs: 100
+      evaluate_interval: 1
+    print_interval: 5
+    save_interval: 1000
+    accumulate_grad_batches: 1
+    learning_rate: 0.036
+callbacks:
+    - name: ModelCheckpoint
+      args:
+          dirpath: null
+          filename: "{epoch}-{val_high_vegetation__IoU:.4f}"
+          monitor: "val_high_vegetation__IoU"
+          verbose: True
+          save_top_k: 3
+          mode: max
+    - name: EarlyStopping
+      args:
+          monitor: "val_high_vegetation__IoU"
+          min_delta: 0.00001
+          patience: 15
+          verbose: False
+          mode: max
+    - name: LearningRateMonitor
+      args:
+          logging_interval: step
+    - name: SemanticVisualizerCallbackWanDB
+
