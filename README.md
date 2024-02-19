@@ -18,7 +18,6 @@ This repository contains the solution of team `FSGWL` (_i don't know what it sta
 ---
 
 ![image](assets/imgs.png)
-![image](assets/mask.png)
 Quick access to the inference notebook:
 <a href="https://colab.research.google.com/github/nhtlongcs/ucc-ai-quest-2023/blob/main/notebooks/solution.ipynb">
 <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
